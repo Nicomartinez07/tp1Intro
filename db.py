@@ -1,5 +1,6 @@
 import os
 
+# Partidos
 def obtener_partidos():
 
 def crear_partido():
@@ -27,3 +28,5 @@ def obtener_usuario_por_id():
 def reemplazar_usuario():
 
 def eliminar_usuario():
+
+def obtener_prediccciones():    
