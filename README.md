@@ -13,3 +13,5 @@ flask run
 https://editor.swagger.io/
 
 # Investigar sobre limit y offset y HATEOAS
+# Terminar de hacer TODOS los json de respuesta bien
+# fijarme bien lo de los blueprints en el video de la catedra
