@@ -192,18 +192,36 @@ def eliminar_partido(id):
         if conn:
             conn.close()
 
-# SIN HACER
+# HECHO
 @partidos_bp.route("/<int:id>/resultado}", methods=["PUT"])
 def actualizar_resultado_de_partido(id):
     try:
         conn = db.get_connection()
+        datos = request.get_json()
+        if (not datos or 
+            'local' not in datos or 
+            'visitante' not in datos):
+            return jsonify({
+                    "errors": [
+                        {
+                        "code": "BAD_REQUEST",
+                        "message": "Solicitud Incompleta.",
+                        "level": "error",
+                        "description": "Faltaron datos necesarios para actualizar el resultado del partido."
+                        }
+                    ]
+        }), 400 
+
         cur = conn.cursor(dictionary=True)
         cur.execute("""
-                    
-                    """)
+                    UPDATE resultados 
+                    SET local= %s, 
+                        visitante= %s 
+                    WHERE partido_id= %s 
+                    JOIN partidos ON resultados.partido_id = partidos.id""", (datos['local'], datos['visitante'], id))
+
         conn.commit()
         return jsonify({"message": "Partido actualizado exitosamente"}), 204 #No Content
-        #400
         #404
     except Exception as e:
         return jsonify({
