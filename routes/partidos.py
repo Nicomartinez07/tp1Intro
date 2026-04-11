@@ -15,7 +15,7 @@ def obtener_partidos():
         fecha = request.args.get("fecha")
         fase = request.args.get("fase")
 
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     SELECT * FROM partidos WHERE equipo_local LIKE %s OR equipo_visitante LIKE %s OR fecha = %s OR fase = %s
@@ -56,11 +56,11 @@ def crear_partido():
             'fase' not in datos):
             return jsonify({"error": "Datos incompletos"}), 400 #Bad Request, faltan datos necesarios para crear el partido
 
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     INSERT INTO partidos (equipo_local, equipo_visitante, fecha, fase) 
-                    VALUES ('%s', '%s', '%s', '%s')
+                    VALUES (%s, %s, %s, %s)
                     """, (datos['equipo_local'], datos['equipo_visitante'], datos['fecha'], datos['fase']))
 
         conn.commit()
@@ -89,12 +89,12 @@ def crear_partido():
 @partidos_bp.route("/<int:id>", methods=["GET"])
 def obtener_partido_por_id(id):
     try:
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     SELECT * FROM partidos WHERE id = %s
                     JOIN resultados ON partidos.id = resultados.partido_id
-                    """, (id))
+                    """, (id,))  # la coma es para que python no lo tome id como tupla, sino como un unico valor 
         partidos = cur.fetchone()
         if not partidos:
             return jsonify({"error": "Partido no encontrado"}), 404 #Not Found
@@ -127,7 +127,7 @@ def reemplazar_partido(id):
         if not datos or 'equipo_local' not in datos or 'equipo_visitante' not in datos or 'fecha' not in datos or 'fase' not in datos:
             return jsonify({'error': 'Los campos "equipo_local", "equipo_visitante", "fecha" y "fase" son obligatorios'}), 400 #Bad Request 
 
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     UPDATE partidos 
@@ -159,12 +159,13 @@ def reemplazar_partido(id):
 # SIN HACER
 @partidos_bp.route("/<int:id>", methods=["PATCH"])
 def actualizar_partido(id):
+    pass
 
 #terminar de hacer 
 @partidos_bp.route("/<int:id>", methods=["DELETE"])
 def eliminar_partido(id):
     try:
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     DELETE FROM partidos WHERE id = %s
@@ -195,7 +196,7 @@ def eliminar_partido(id):
 @partidos_bp.route("/<int:id>/resultado}", methods=["PUT"])
 def actualizar_resultado_de_partido(id):
     try:
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     
@@ -229,6 +230,8 @@ def realizar_prediccion(id):
         #400
         #404
         #409
+
+        pass
     except Exception as e:
         return jsonify({
         "errors": [

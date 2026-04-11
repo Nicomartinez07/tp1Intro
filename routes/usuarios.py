@@ -11,7 +11,7 @@ usuarios_bp = blueprints.Blueprint("usuarios", __name__)
 @app.route("/usuarios", methods=["GET"])
 def obtener_usuarios():
     try:
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     SELECT * FROM usuarios
@@ -49,7 +49,7 @@ def crear_usuario():
             'email' not in datos):
             return jsonify({"error": "Datos incompletos"}), 400 #Bad Request, faltan datos necesarios para crear el partido
 
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     INSERT INTO usuarios (nombre, email) 
@@ -81,7 +81,7 @@ def crear_usuario():
 @app.route("/usuarios/<int:id>", methods=["GET"])
 def obtener_usuario_por_id(id):
     try:
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     SELECT * FROM usuarios WHERE id = %s
@@ -111,12 +111,12 @@ def obtener_usuario_por_id(id):
 #terminar de hacer
 @app.route("/usuarios/<int:id>", methods=["PUT"])
 def reemplazar_usuario(id):
-     try:
+    try:
         datos = request.get_json()
         if not datos or 'nombre' not in datos or 'email' not in datos:
             return jsonify({'error': 'Los campos "nombre" y "email" son obligatorios'}), 400 #Bad Request 
 
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     UPDATE usuarios 
@@ -147,7 +147,7 @@ def reemplazar_usuario(id):
 @app.route("/usuarios/<int:id>", methods=["DELETE"])
 def eliminar_usuario(id):
     try:
-        conn = get_connection()
+        conn = db.get_connection()
         cur = conn.cursor(dictionary=True)
         cur.execute("""
                     DELETE FROM usuarios WHERE id = %s

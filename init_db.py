@@ -1,13 +1,10 @@
-import mysql.connector 
+import mysql.connector
+import db 
 
 with open("schema.sql", "r") as f:
     sql = f.read()
 
-conn = mysql.connector.connect(
-    "host": "localhost",
-    "user": "root",
-    "password": "password"
-)
+conn = db.get_connection()
 
 cursor = conn.cursor()
 for statement in sql.split(";"):
@@ -16,4 +13,4 @@ for statement in sql.split(";"):
         conn.commit()
     
 cursor.close()
-conn.close()
+conn.close()    
