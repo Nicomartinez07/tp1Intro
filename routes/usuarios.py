@@ -1,14 +1,14 @@
-from flask import Flask, request, jsonify, blueprints
+from flask import Flask, request, jsonify, Blueprint
 import db
 
 app = Flask(__name__)
-usuarios_bp = blueprints.Blueprint("usuarios", __name__)
+usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
 
 
 #Usuarios  --------------------------------------------------------------
 
 # terminar de hacer - agregar limit y offset como parametros de consulta y filtrar en base a eso
-@app.route("/usuarios", methods=["GET"])
+@usuarios_bp.route("/", methods=["GET"])
 def obtener_usuarios():
     try:
         conn = db.get_connection()
@@ -40,7 +40,7 @@ def obtener_usuarios():
             conn.close()
 
 # terminar de hacer
-@app.route("/usuarios", methods=["POST"])
+@usuarios_bp.route("/", methods=["POST"])
 def crear_usuario():
     try:
         datos = request.get_json()
@@ -78,7 +78,7 @@ def crear_usuario():
             conn.close()
 
 # terminar de hacer
-@app.route("/usuarios/<int:id>", methods=["GET"])
+@usuarios_bp.route("/<int:id>", methods=["GET"])
 def obtener_usuario_por_id(id):
     try:
         conn = db.get_connection()
@@ -109,7 +109,7 @@ def obtener_usuario_por_id(id):
             conn.close()
 
 #terminar de hacer
-@app.route("/usuarios/<int:id>", methods=["PUT"])
+@usuarios_bp.route("/<int:id>", methods=["PUT"])
 def reemplazar_usuario(id):
     try:
         datos = request.get_json()
@@ -144,7 +144,7 @@ def reemplazar_usuario(id):
             conn.close()
 
 # terminar de hacer
-@app.route("/usuarios/<int:id>", methods=["DELETE"])
+@usuarios_bp.route("/<int:id>", methods=["DELETE"])
 def eliminar_usuario(id):
     try:
         conn = db.get_connection()

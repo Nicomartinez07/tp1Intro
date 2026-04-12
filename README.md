@@ -6,6 +6,12 @@
 # Para instalar dependencias
 pip install -r requirements.txt
 
+# Para correr base de datos
+python init_db.py
+
+# Para correr seed.py y poblar DATABSE
+python seed.py
+
 # Para correr aplicacion 
 flask run 
 

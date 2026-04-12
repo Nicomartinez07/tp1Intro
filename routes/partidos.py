@@ -1,8 +1,8 @@
-from flask import Flask, request, jsonify, blueprints
+from flask import Flask, request, jsonify, Blueprint
 import db
 
 app = Flask(__name__)
-partidos_bp = blueprints.Blueprint("partidos", __name__)
+partidos_bp = Blueprint("partidos", __name__, url_prefix="/partidos")
 
 
 #Partidos  --------------------------------------------------------------

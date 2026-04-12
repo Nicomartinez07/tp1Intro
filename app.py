@@ -1,13 +1,12 @@
 from flask import Flask, request, jsonify, Blueprint
 import db
+from routes.partidos import partidos_bp
+from routes.usuarios import usuarios_bp
 
 app = Flask(__name__)
 
-partidos_bp = Blueprint("partidos", __name__, url_prefix="/partidos")
-usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
-
-app.register_blueprint(partidos_bp)
-app.register_blueprint(usuarios_bp)
+app.register_blueprint(partidos_bp, url_prefix="/partidos")
+app.register_blueprint(usuarios_bp, url_prefix="/usuarios")
 
 @app.route("/ranking", methods=["GET"])
 def obtener_ranking():
