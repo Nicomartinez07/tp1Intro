@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, Blueprint
-import db
+import services.partido_service as logic
 
 app = Flask(__name__)
 partidos_bp = Blueprint("partidos", __name__, url_prefix="/partidos")
@@ -7,27 +7,31 @@ partidos_bp = Blueprint("partidos", __name__, url_prefix="/partidos")
 
 #Partidos  --------------------------------------------------------------
 
-# Terminar de hacer - agregar limit y offset
+# Terminar de hacer - agregar limit y offset - fecha format 
 @partidos_bp.route("/", methods=["GET"])
 def obtener_partidos():
     try: 
-        equipos = request.args.get("equipos")
+        equipo = request.args.get("equipo")
         fecha = request.args.get("fecha")
         fase = request.args.get("fase")
 
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    SELECT * FROM partidos WHERE equipo_local LIKE %s OR equipo_visitante LIKE %s OR fecha = %s OR fase = %s
-                    """, (equipos, equipos, fecha, fase))
+        print("PARAMETROS RECIBIDOS EN ROUTER: ", equipo, fecha, fase, flush=True)
+        partidos = logic.obtener_partidos(equipo, fecha, fase)
         
-        partidos = cur.fetchall()
         return jsonify(partidos), 200
 
-        #204
-        #400
-        #404
-    except Exception as e:
+    except ValueError as ve: # Errores en la validacion del service 
+        return jsonify({
+        "errors": [
+            {
+                "code": "BAD_REQUEST",
+                "message": str(ve),
+                "level": "error",
+            }
+        ]
+    }), 400
+
+    except Exception as e: # Errores internos 
         return jsonify({
         "errors": [
             {
@@ -38,11 +42,7 @@ def obtener_partidos():
             }
         ]
     }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+
     
 #  Terminar de hacer 
 @partidos_bp.route("/", methods=["POST"])
