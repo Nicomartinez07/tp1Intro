@@ -1,23 +1,65 @@
-# tp1Intro
+# Prode Mundial 2026 - API Backend
 
-# Para activar entorno virtual: 
-. .venv/bin/activate 
+esto es ia hay que cambiarlo con nuestras palabras 
 
-# Para instalar dependencias
+Este proyecto consiste en el desarrollo de una API REST para gestionar el fixture y los pronósticos deportivos (ProDe) del Mundial de la FIFA 2026. La aplicación está diseñada para fomentar la interacción entre colaboradores de una empresa con un fin solidario.
+
+---
+
+## Arquitectura del Proyecto
+
+Para cumplir con los estándares de calidad de la cátedra, el proyecto implementa una arquitectura de **Separación de Responsabilidades** en tres capas principales. Esto facilita el mantenimiento, el testeo y evita el "código espagueti".
+
+### 1. Capa de Routers (`/routes`)
+* **Responsabilidad:** Punto de entrada de la aplicación.
+* **Función:** Define los endpoints (rutas), recibe las peticiones HTTP y extrae los datos de la solicitud (JSON o argumentos de URL).
+* **Independencia:** No conoce la lógica de negocio ni realiza consultas SQL.
+
+### 2. Capa de Servicios (`/services`)
+* **Responsabilidad:** Lógica de Negocio.
+* **Función:** Es el "cerebro" de la API. Valida que los datos recibidos tengan sentido lógico (ej: formatos de fecha, reglas del torneo) y orquesta la comunicación entre el Router y el Repositorio.
+* **Independencia:** No sabe nada sobre HTTP ni sobre la implementación específica de la base de datos.
+
+### 3. Capa de Repositorios (`/repositories`)
+* **Responsabilidad:** Persistencia de datos.
+* **Función:** Es la única capa que contiene sentencias SQL. Se encarga de abrir/cerrar conexiones, manejar cursores y transformar los resultados de la DB en estructuras de Python.
+* **Independencia:** Solo se preocupa por almacenar y recuperar datos de forma eficiente.
+
+---
+
+## Instalación y Ejecucion
+
+Sigue estos pasos para configurar tu entorno local:
+
+### 1. Clonar y Preparar Entorno
+```bash
+# Clonar el repositorio (si aplica)
+git clone <url-del-repo>
+
+# Crear y activar entorno virtual (Windows)
+python -m venv .venv
+.venv\Scripts\activate
+
+# Crear y activar entorno virtual (Linux/macOS)
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Instalar dependencias
 pip install -r requirements.txt
+```
 
-# Para correr base de datos
+### 2. Base de Datos
+
+```bash
+# Crear la estructura de tablas (Database & Tables)
 python init_db.py
 
-# Para correr seed.py y poblar DATABSE
+# Poblar la base de datos con el fixture inicial
 python seed.py
+```
 
-# Para correr aplicacion 
-flask run 
+### 2. Ejecucion de la API 
 
-# Pagina para visualizar el swagger.yaml 
-https://editor.swagger.io/
-
-# Investigar sobre limit y offset y HATEOAS
-# Terminar de hacer TODOS los json de respuesta bien
-# fijarme bien lo de los blueprints en el video de la catedra
+```bash
+python app.py
+```

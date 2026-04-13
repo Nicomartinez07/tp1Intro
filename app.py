@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, Blueprint
 import db
-from routes.partidos import partidos_bp
-from routes.usuarios import usuarios_bp
+from routes.partido_router import partidos_bp
+from routes.usuario_router import usuarios_bp
 
 app = Flask(__name__)
 
@@ -78,5 +78,5 @@ if __name__ == "__main__":
     if len(sys.argv) > 1: # si se pasa un argumento al ejecutar 'python app.py {numero_puerto}' se ejecuta en el puerto indicado 
         port = int(sys.argv[1])
 
-    app.run(port=port)
+    app.run(port=port, debug=True)
 

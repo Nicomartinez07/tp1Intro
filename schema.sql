@@ -1,13 +1,13 @@
 CREATE DATABASE IF NOT EXISTS prode_mundial_2026;
 USE prode_mundial_2026;
 
-CREATE TABLE usuarios (
+CREATE TABLE IF NOT EXISTS usuarios (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE
 );
 
-CREATE TABLE partidos (
+CREATE TABLE IF NOT EXISTS partidos (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     equipo_local VARCHAR(100) NOT NULL,
     equipo_visitante VARCHAR(100) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE partidos (
     fase VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE resultados (
+CREATE TABLE IF NOT EXISTS resultados (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     partido_id INT NOT NULL UNIQUE, 
     goles_local INT NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE resultados (
     FOREIGN KEY (partido_id) REFERENCES partidos(id) ON DELETE CASCADE
 );
 
-CREATE TABLE predicciones (
+CREATE TABLE IF NOT EXISTS predicciones (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
     partido_id INT NOT NULL,
