@@ -1,12 +1,34 @@
 from datetime import datetime
 import repositories.partido_repository as db
 
-def obtener_partidos(equipo=None, fecha=None, fase=None):
+global partido_params
+partido_params = ["equipo_local", "equipo_visitante", "fecha", "fase"]
 
+def __validar_fecha(fecha_str, incluye_hora=False):
+    formato = '%Y-%m-%d %H:%M:%S' if incluye_hora else '%Y-%m-%d' # datetime or date dependiendo del la request 
+    try:
+        return datetime.strptime(fecha_str, formato)
+    except (ValueError, TypeError):
+        raise ValueError(f"Fecha invalida")
+
+def obtener_partidos(equipo=None, fecha=None, fase=None):
     if fecha:
-        try:
-            datetime.strptime(fecha, '%Y-%m-%d')
-        except ValueError:
-            raise ValueError("Fecha inválida. El formato debe ser YYYY-MM-DD.")
+        __validar_fecha(fecha)
     
     return db.obtener_partidos(equipo, fecha, fase)
+
+
+def crear_partido(parametros):
+    for campo in partido_params:
+        if (campo not in parametros) or (not parametros[campo]):
+            raise ValueError(f"El campo '{campo}' es requerido.")
+
+    equipo_local = parametros["equipo_local"]
+    equipo_visitante = parametros["equipo_visitante"]
+    fecha = parametros["fecha"]
+    fase = parametros["fase"]
+
+    __validar_fecha(fecha, True)
+
+    new_partido = db.crear_partido(equipo_local, equipo_visitante, fecha, fase)
+    return new_partido  

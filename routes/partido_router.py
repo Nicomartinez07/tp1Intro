@@ -15,7 +15,6 @@ def obtener_partidos():
         fecha = request.args.get("fecha")
         fase = request.args.get("fase")
 
-        print("PARAMETROS RECIBIDOS EN ROUTER: ", equipo, fecha, fase, flush=True)
         partidos = logic.obtener_partidos(equipo, fecha, fase)
         
         return jsonify(partidos), 200
@@ -48,25 +47,24 @@ def obtener_partidos():
 @partidos_bp.route("/", methods=["POST"])
 def crear_partido():
     try: 
-        datos = request.get_json()
-        if (not datos or 
-            'equipo_local' not in datos or 
-            'equipo_visitante' not in datos or 
-            'fecha' not in datos or 
-            'fase' not in datos):
-            return jsonify({"error": "Datos incompletos"}), 400 #Bad Request, faltan datos necesarios para crear el partido
+        parametros = request.get_json()
 
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    INSERT INTO partidos (equipo_local, equipo_visitante, fecha, fase) 
-                    VALUES (%s, %s, %s, %s)
-                    """, (datos['equipo_local'], datos['equipo_visitante'], datos['fecha'], datos['fase']))
+        new_partido = logic.crear_partido(parametros)
 
-        conn.commit()
-        return jsonify({"message": "Partido creado exitosamente"}), 201 #Created
+        return jsonify({"message": "Partido creado exitosamente", "partido": new_partido}), 201 #Created
 
         #409
+    
+    except ValueError as ve:
+        return jsonify({
+        "errors": [
+            {
+                "code": "BAD_REQUEST",
+                "message": str(ve),
+                "level": "error",
+            }
+        ]
+    }), 400
 
     except Exception as e:
         return jsonify({
@@ -79,11 +77,7 @@ def crear_partido():
             }
         ]
     }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+
 
 #  Terminar de hacer
 @partidos_bp.route("/<int:id>", methods=["GET"])

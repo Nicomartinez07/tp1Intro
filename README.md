@@ -8,17 +8,17 @@ Este proyecto consiste en el desarrollo de una API REST para gestionar el fixtur
 
 ## Arquitectura del Proyecto
 
-Para cumplir con los estándares de calidad de la cátedra, el proyecto implementa una arquitectura de **Separación de Responsabilidades** en tres capas principales. Esto facilita el mantenimiento, el testeo y evita el "código espagueti".
+Para cumplir con los estándares de calidad de la cátedra, el proyecto implementa una arquitectura de **Separación de Responsabilidades** en tres capas principales. Esto facilita el mantenimiento, el testeo y evita el "código espagueti"
 
 ### 1. Capa de Routers (`/routes`)
-* **Responsabilidad:** Punto de entrada de la aplicación.
-* **Función:** Define los endpoints (rutas), recibe las peticiones HTTP y extrae los datos de la solicitud (JSON o argumentos de URL).
-* **Independencia:** No conoce la lógica de negocio ni realiza consultas SQL.
+* **Responsabilidad:** Punto de entrada de la API
+* **Función:** Define los endpoints (rutas), recibe las request y se encarga del manejo de errores
+* **Independencia:** No conoce la lógica de negocio ni realiza consultas SQL
 
 ### 2. Capa de Servicios (`/services`)
-* **Responsabilidad:** Lógica de Negocio.
-* **Función:** Es el "cerebro" de la API. Valida que los datos recibidos tengan sentido lógico (ej: formatos de fecha, reglas del torneo) y orquesta la comunicación entre el Router y el Repositorio.
-* **Independencia:** No sabe nada sobre HTTP ni sobre la implementación específica de la base de datos.
+* **Responsabilidad:** Lógica de Negocio
+* **Función:** Es el "cerebro" de la API. Valida que los datos recibidos tengan sentido lógico (ej: formatos de fecha, reglas del torneo) y orquesta la comunicación entre el Router y el Repositorio
+* **Independencia:** No sabe nada sobre HTTP ni sobre la implementación específica de la base de datos
 
 ### 3. Capa de Repositorios (`/repositories`)
 * **Responsabilidad:** Persistencia de datos.
