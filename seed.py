@@ -28,9 +28,31 @@ def seed_data():
         # 2. Insertar Partidos
         # Formato: (equipo_local, equipo_visitante, estadio, ciudad, fecha, fase)
         partidos_data = [
-            ('Argentina', 'Arabia Saudita', 'Lusail', 'Al Daayen', '2026-06-10 10:00:00', 'Fase de Grupos'),
-            ('México', 'Polonia', '974', 'Doha', '2026-06-10 13:00:00', 'Fase de Grupos'),
-            ('Francia', 'Australia', 'Al Janoub', 'Al Wakrah', '2026-06-11 16:00:00', 'Fase de Grupos')
+            ('Argentina', 'Arabia Saudita', 'MetLife Stadium', 'New Jersey', '2026-06-11 15:00:00', 'Fase de Grupos'),
+            ('México', 'Polonia', 'Estadio Azteca', 'Ciudad de México', '2026-06-11 18:00:00', 'Fase de Grupos'),
+            ('Francia', 'Australia', 'BC Place', 'Vancouver', '2026-06-12 16:00:00', 'Fase de Grupos'),
+            ('Estados Unidos', 'Marruecos', 'SoFi Stadium', 'Los Angeles', '2026-06-12 19:00:00', 'Fase de Grupos'),
+            ('España', 'Costa Rica', 'Hard Rock Stadium', 'Miami', '2026-06-13 13:00:00', 'Fase de Grupos'),
+            ('Alemania', 'Japón', 'NRG Stadium', 'Houston', '2026-06-13 16:00:00', 'Fase de Grupos'),
+            ('Bélgica', 'Canadá', 'BMO Field', 'Toronto', '2026-06-13 20:00:00', 'Fase de Grupos'),
+            ('Brasil', 'Serbia', 'Mercedes-Benz Stadium', 'Atlanta', '2026-06-14 15:00:00', 'Fase de Grupos'),
+            ('Portugal', 'Ghana', 'Gillette Stadium', 'Boston', '2026-06-14 18:00:00', 'Fase de Grupos'),
+            ('Uruguay', 'Corea del Sur', 'Lincoln Financial Field', 'Philadelphia', '2026-06-14 21:00:00', 'Fase de Grupos'),
+            ('Inglaterra', 'Irán', 'Levi\'s Stadium', 'Santa Clara', '2026-06-15 14:00:00', 'Fase de Grupos'),
+            ('Países Bajos', 'Senegal', 'Arrowhead Stadium', 'Kansas City', '2026-06-15 17:00:00', 'Fase de Grupos'),
+            ('Suiza', 'Camerún', 'Lumen Field', 'Seattle', '2026-06-15 20:00:00', 'Fase de Grupos'),
+            ('Croacia', 'Marruecos', 'AT&T Stadium', 'Arlington', '2026-06-16 13:00:00', 'Fase de Grupos'),
+            ('Dinamarca', 'Túnez', 'Akron Stadium', 'Guadalajara', '2026-06-16 16:00:00', 'Fase de Grupos'),
+            ('Argentina', 'México', 'Estadio Azteca', 'Ciudad de México', '2026-06-20 20:00:00', 'Fase de Grupos'),
+            ('España', 'Alemania', 'MetLife Stadium', 'New Jersey', '2026-06-21 20:00:00', 'Fase de Grupos'),
+            ('Francia', 'Dinamarca', 'SoFi Stadium', 'Los Angeles', '2026-06-21 17:00:00', 'Fase de Grupos'),
+            ('Brasil', 'Suiza', 'Hard Rock Stadium', 'Miami', '2026-06-22 19:00:00', 'Fase de Grupos'),
+            ('Portugal', 'Uruguay', 'NRG Stadium', 'Houston', '2026-06-22 16:00:00', 'Fase de Grupos'),
+            ('Polonia', 'Argentina', 'Mercedes-Benz Stadium', 'Atlanta', '2026-06-25 20:00:00', 'Fase de Grupos'),
+            ('Canadá', 'Marruecos', 'BMO Field', 'Toronto', '2026-06-26 15:00:00', 'Fase de Grupos'),
+            ('Ghana', 'Uruguay', 'Gillette Stadium', 'Boston', '2026-06-26 18:00:00', 'Fase de Grupos'),
+            ('Camerún', 'Brasil', 'Lincoln Financial Field', 'Philadelphia', '2026-06-27 19:00:00', 'Fase de Grupos'),
+            ('Japón', 'España', 'BC Place', 'Vancouver', '2026-06-27 16:00:00', 'Fase de Grupos')
         ]
         query_partido = """
             INSERT INTO partidos (equipo_local, equipo_visitante, estadio, ciudad, fecha, fase) 
