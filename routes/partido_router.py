@@ -7,7 +7,7 @@ partidos_bp = Blueprint("partidos", __name__, url_prefix="/partidos")
 
 #Partidos  --------------------------------------------------------------
 
-# Terminar de hacer - agregar limit y offset - fecha format 
+
 @partidos_bp.route("/", methods=["GET"])
 def obtener_partidos():
     try: 
@@ -15,9 +15,20 @@ def obtener_partidos():
         fecha = request.args.get("fecha")
         fase = request.args.get("fase")
 
-        partidos = logic.obtener_partidos(equipo, fecha, fase)
+        limit = request.args.get('_limit', default=10, type=int)
+        offset = request.args.get('_offset', default=0, type=int)
+
+        partidos, total = logic.obtener_partidos(equipo, fecha, fase, limit, offset)
+
+        if not partidos:
+            return jsonify({"message": "No se encontraron partidos con los criterios especificados."}), 204 # No Content
         
-        return jsonify(partidos), 200
+        response = {
+            "partidos": partidos,
+            "total": total
+        }
+        
+        return jsonify(response), 200
 
     except ValueError as ve: # Errores en la validacion del service 
         return jsonify({
@@ -43,7 +54,6 @@ def obtener_partidos():
     }), 500 #Internal Server Error
 
     
-#  Terminar de hacer 
 @partidos_bp.route("/", methods=["POST"])
 def crear_partido():
     try: 
@@ -79,7 +89,8 @@ def crear_partido():
     }), 500 #Internal Server Error
 
 
-#  Terminar de hacer
+# FALTA TERMINAR DE HACER 
+'''
 @partidos_bp.route("/<int:id>", methods=["GET"])
 def obtener_partido_por_id(id):
     try:
@@ -255,3 +266,4 @@ def realizar_prediccion(id):
             }
         ]
     }), 500 #Internal Server Error
+'''

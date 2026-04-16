@@ -11,11 +11,14 @@ def __validar_fecha(fecha_str, incluye_hora=False):
     except (ValueError, TypeError):
         raise ValueError(f"Fecha invalida")
 
-def obtener_partidos(equipo=None, fecha=None, fase=None):
+def obtener_partidos(equipo=None, fecha=None, fase=None, limit=10, offset=0):
     if fecha:
         __validar_fecha(fecha)
+
+    if limit < 0 or offset < 0:
+        raise ValueError("Los parametros '_limit' y '_offset' deben ser enteros no negativos.")
     
-    return db.obtener_partidos(equipo, fecha, fase)
+    return db.obtener_partidos(equipo, fecha, fase, limit, offset)
 
 
 def crear_partido(parametros):
