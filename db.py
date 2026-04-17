@@ -1,11 +1,14 @@
 import mysql.connector
 import os
 
+global password
+password = "fiuba" # Asegurate que sea tu password de MySQL
+
 def get_connection(database_name="prode_mundial_2026"):
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="fiuba", # Asegurate que sea tu password de MySQL
+        password=password, # Asegurate que sea tu password de MySQL
         database=database_name
     )
 
@@ -14,10 +17,39 @@ def get_server_connection():
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="fiuba"
+        password=password
     )
 
+
 def execute_query(query, params=None, modifica_db=False, un_solo_valor=False):
+    """
+        Ejecuta una query SQL.
+
+        Args:
+            query (str): Sentencia SQL a ejecutar. Debe usar '(%s)' en las variables por seguridad
+
+            params (tuple/list, optional): Valores para reemplazar los marcadores en la query.
+                Por defecto es None.
+
+            modifica_db (bool): Debe ser True para sentencias INSERT, UPDATE o DELETE.
+                devuelve el ID del registro afectado.
+                Si es False (default), se asume una consulta SELECT.
+
+            un_solo_valor (bool): Si es True, devuelve solo el primer resultado (dict).
+              Útil para búsquedas por ID o COUNT(*). 
+                Solo aplica si modifica_db es False.
+
+        Returns:
+            list/dict/int/None: 
+                - Si modifica_db=False: Una lista de diccionarios (un_solo_valor=False) o un solo 
+                diccionario (un_solo_valor=True).
+                - Si modifica_db=True: El ID de la última fila insertada (int).
+                - None: Si no hay resultados.
+
+        Raises:
+            Exception: Si ocurre un error en la ejecución, realiza un rollback de la 
+                conexión y relanza la excepción con detalles de la query y parámetros.
+        """
     conn = None
     cur = None
     try:
