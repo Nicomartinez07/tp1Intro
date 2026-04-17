@@ -93,20 +93,36 @@ def crear_partido():
 
 @partidos_bp.route("/<int:id>", methods=["GET"])
 def obtener_partido_por_id(id):
-    try:
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    SELECT * FROM partidos WHERE id = %s
-                    JOIN resultados ON partidos.id = resultados.partido_id
-                    """, (id,))  # la coma es para que python no lo tome id como tupla, sino como un unico valor 
-        partidos = cur.fetchone()
-        if not partidos:
-            return jsonify({"error": "Partido no encontrado"}), 404 #Not Found
-        return jsonify(partidos), 200 #OK
+    try: 
+        partido = logic.obtener_partido_por_id(id)
+        response = {
+            "partido": partido,
+        }
+        
+        return jsonify(response), 200
 
-        #400
-    except Exception as e:
+    except ValueError as ve:
+        mensaje = str(ve)
+
+        if "No se encontró" in mensaje:
+            code = "NOT_FOUND"
+            status = 404
+            descripcion = f"No se encontro el partido con el ID {id}."
+        else:
+            code = "BAD_REQUEST"
+            status = 400
+            descripcion = "Los parámetros de la solicitud son inválidos."
+
+        return jsonify({
+            "errors": [{
+                "code": code,
+                "message": mensaje,
+                "description": descripcion,
+                "level": "error"
+            }]
+        }), status
+    
+    except Exception as e: # Errores internos 
         return jsonify({
         "errors": [
             {
@@ -117,11 +133,6 @@ def obtener_partido_por_id(id):
             }
         ]
     }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
 
 # Terminar de hacer
 @partidos_bp.route("/<int:id>", methods=["PUT"])
@@ -166,7 +177,7 @@ def reemplazar_partido(id):
 def actualizar_partido(id):
     pass
 
-#terminar de hacer 
+#Hecho
 @partidos_bp.route("/<int:id>", methods=["DELETE"])
 def eliminar_partido_endpoint(id):
     try: 
@@ -175,15 +186,24 @@ def eliminar_partido_endpoint(id):
 
     except ValueError as ve:
         mensaje = str(ve)
-        status_code = 404 if "No se encontró" in mensaje else 400
-        
+
+        if "No se encontró" in mensaje:
+            code = "NOT_FOUND"
+            status = 404
+            descripcion = f"No se encontro el partido con el ID {id}."
+        else:
+            code = "BAD_REQUEST"
+            status = 400
+            descripcion = "Los parámetros de la solicitud son inválidos."
+
         return jsonify({
             "errors": [{
-                "code": "NOT_FOUND" if status_code == 404 else "BAD_REQUEST",
+                "code": code,
                 "message": mensaje,
+                "description": descripcion,
                 "level": "error"
             }]
-        }), status_code
+        }), status
     
     except Exception as e:
         # Log para el desarrollador en la consola
@@ -200,31 +220,32 @@ def eliminar_partido_endpoint(id):
 def actualizar_resultado_de_partido(id):
     try: 
         parametros = request.get_json()
-        parametros["id"] = id  # 🔥 clave
+        parametros["id"] = id
 
-        new_resultado = logic.actualizar_resultado_de_partido(parametros)
+        logic.actualizar_resultado_de_partido(parametros)
 
         return "", 204
 
     except ValueError as ve:
         mensaje = str(ve)
 
-        if "No se encontró el partido" in mensaje:
-            return jsonify({
-                "errors": [{
-                    "code": "NOT_FOUND",
-                    "message": mensaje,
-                    "level": "error"
-                }]
-            }), 404
+        if "No se encontró" in mensaje:
+            code = "NOT_FOUND"
+            status = 404
+            descripcion = f"No se encontro el partido con el ID {id}."
+        else:
+            code = "BAD_REQUEST"
+            status = 400
+            descripcion = "Los parámetros de la solicitud son inválidos."
 
         return jsonify({
             "errors": [{
-                "code": "BAD_REQUEST",
+                "code": code,
                 "message": mensaje,
+                "description": descripcion,
                 "level": "error"
             }]
-        }), 400
+        }), status
     
     except Exception as e:
         return jsonify({

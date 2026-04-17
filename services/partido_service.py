@@ -37,12 +37,30 @@ def crear_partido(parametros):
     new_partido = db.crear_partido(equipo_local, equipo_visitante, fecha, fase)
     return new_partido  
 
+def obtener_partido_por_id(id):
+    row = db.obtener_partido_por_id(id)
+    
+    if not row:
+        raise ValueError("No se encontró el partido")
+    respuesta_estilizada = {
+        "id": row.get("id"),
+        "equipo_local": row.get("equipo_local"),
+        "equipo_visitante": row.get("equipo_visitante"),
+        "fecha": row.get("fecha").strftime("%Y-%m-%d") if row.get("fecha") else None,
+        "fase": row.get("fase"),
+        "resultado": {
+            "local": row.get("goles_local"),
+            "visitante": row.get("goles_visitante")
+        }
+    }
+    return respuesta_estilizada
+
 def eliminar_partido(id):   
     if not id:
         raise ValueError("El campo 'id' es requerido.")
     
     if not db.eliminar_partido(id):
-        raise ValueError("No se encontró el partido con el ID proporcionado.")
+        raise ValueError("No se encontró el partido")
     
     return True
     

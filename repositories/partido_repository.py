@@ -59,6 +59,23 @@ def crear_partido(equipo_local, equipo_visitante, fecha, fase):
 
     return new_partido
 
+def obtener_partido_por_id(id):
+    query = """
+        SELECT 
+            p.id, 
+            p.equipo_local, 
+            p.equipo_visitante, 
+            p.fecha, 
+            p.fase,
+            r.goles_local, 
+            r.goles_visitante
+        FROM partidos p
+        LEFT JOIN resultados r ON p.id = r.partido_id 
+        WHERE p.id = %s
+    """ #left para traerme un partido sin resultado, porque sino no me traeria nada
+    resultado = execute_query(query, (id,), select=True)
+    return resultado[0] if resultado else None
+
 def eliminar_partido(id):
     query = "DELETE FROM partidos WHERE id = %s"
     filas_afectadas = execute_query(query, (id,), select=False)
