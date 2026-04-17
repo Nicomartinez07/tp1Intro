@@ -90,7 +90,7 @@ def crear_partido():
 
 
 # FALTA TERMINAR DE HACER 
-'''
+
 @partidos_bp.route("/<int:id>", methods=["GET"])
 def obtener_partido_por_id(id):
     try:
@@ -198,53 +198,49 @@ def eliminar_partido(id):
             conn.close()
 
 # HECHO
-@partidos_bp.route("/<int:id>/resultado}", methods=["PUT"])
+@partidos_bp.route("/<int:id>/resultado", methods=["PUT"])
 def actualizar_resultado_de_partido(id):
-    try:
-        conn = db.get_connection()
-        datos = request.get_json()
-        if (not datos or 
-            'local' not in datos or 
-            'visitante' not in datos):
+    try: 
+        parametros = request.get_json()
+        parametros["id"] = id  # 🔥 clave
+
+        new_resultado = logic.actualizar_resultado_de_partido(parametros)
+
+        return jsonify({
+            "message": "Resultado actualizado exitosamente",
+            "resultado": new_resultado
+        }), 200
+
+    except ValueError as ve:
+        mensaje = str(ve)
+
+        if "No se encontró el partido" in mensaje:
             return jsonify({
-                    "errors": [
-                        {
-                        "code": "BAD_REQUEST",
-                        "message": "Solicitud Incompleta.",
-                        "level": "error",
-                        "description": "Faltaron datos necesarios para actualizar el resultado del partido."
-                        }
-                    ]
-        }), 400 
+                "errors": [{
+                    "code": "NOT_FOUND",
+                    "message": mensaje,
+                    "level": "error"
+                }]
+            }), 404
 
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    UPDATE resultados 
-                    SET local= %s, 
-                        visitante= %s 
-                    WHERE partido_id= %s 
-                    JOIN partidos ON resultados.partido_id = partidos.id""", (datos['local'], datos['visitante'], id))
-
-        conn.commit()
-        return jsonify({"message": "Partido actualizado exitosamente"}), 204 #No Content
-        #404
+        return jsonify({
+            "errors": [{
+                "code": "BAD_REQUEST",
+                "message": mensaje,
+                "level": "error"
+            }]
+        }), 400
+    
     except Exception as e:
         return jsonify({
-        "errors": [
-            {
+            "errors": [{
                 "code": "INTERNAL_SERVER_ERROR",
                 "message": "Ocurrió un error interno",
                 "level": "error",
                 "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
-
+            }]
+        }), 500
+    
 # SIN HACER
 @partidos_bp.route("/<int:id>/prediccion}", methods=["POST"])
 def realizar_prediccion(id):
@@ -266,4 +262,3 @@ def realizar_prediccion(id):
             }
         ]
     }), 500 #Internal Server Error
-'''

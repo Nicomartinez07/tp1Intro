@@ -3,6 +3,7 @@ import repositories.partido_repository as db
 
 global partido_params
 partido_params = ["equipo_local", "equipo_visitante", "fecha", "fase"]
+resultado_params = ["goles_local", "goles_visitante"]
 
 def __validar_fecha(fecha_str, incluye_hora=False):
     formato = '%Y-%m-%d %H:%M:%S' if incluye_hora else '%Y-%m-%d' # datetime or date dependiendo del la request 
@@ -35,3 +36,19 @@ def crear_partido(parametros):
 
     new_partido = db.crear_partido(equipo_local, equipo_visitante, fecha, fase)
     return new_partido  
+
+def actualizar_resultado_de_partido(parametros):
+    for campo in resultado_params:
+        if (campo not in parametros) or (parametros[campo] is None):
+            raise ValueError(f"El campo '{campo}' es requerido.")
+        
+    id = parametros.get("id")
+    goles_local = parametros.get("goles_local")
+    goles_visitante = parametros.get("goles_visitante")
+
+    new_resultado = db.actualizar_resultado_de_partido(id, goles_local, goles_visitante)
+
+    if new_resultado is None:
+        raise ValueError("No se encontró el partido")  
+
+    return new_resultado
