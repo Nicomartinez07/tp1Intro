@@ -12,9 +12,11 @@ def execute_query(query, params=None, select=True):
         if select: 
             return cur.fetchall()
         
-        # si la query es un insert o update hay que hacer commit() para que los cambios se guarden en la DB 
         conn.commit()
-        return cur.lastrowid
+        if query.strip().upper().startswith("INSERT"):
+            return cur.lastrowid
+        else:
+            return cur.rowcount
     except Exception as e:
         if conn: 
             conn.rollback() # si hay un error en un post o put hay que revertir los cambios hecho a la DB para evitar datos corruptos 
@@ -57,6 +59,10 @@ def crear_partido(equipo_local, equipo_visitante, fecha, fase):
 
     return new_partido
 
+def eliminar_partido(id):
+    query = "DELETE FROM partidos WHERE id = %s"
+    filas_afectadas = execute_query(query, (id,), select=False)
+    return filas_afectadas > 0
 
 def actualizar_resultado_de_partido(id, goles_local, goles_visitante):
 

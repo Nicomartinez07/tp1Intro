@@ -37,6 +37,15 @@ def crear_partido(parametros):
     new_partido = db.crear_partido(equipo_local, equipo_visitante, fecha, fase)
     return new_partido  
 
+def eliminar_partido(id):   
+    if not id:
+        raise ValueError("El campo 'id' es requerido.")
+    
+    if not db.eliminar_partido(id):
+        raise ValueError("No se encontró el partido con el ID proporcionado.")
+    
+    return True
+    
 def actualizar_resultado_de_partido(parametros):
     for campo in resultado_params:
         if (campo not in parametros) or (parametros[campo] is None):

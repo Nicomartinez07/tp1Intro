@@ -168,35 +168,33 @@ def actualizar_partido(id):
 
 #terminar de hacer 
 @partidos_bp.route("/<int:id>", methods=["DELETE"])
-def eliminar_partido(id):
-    try:
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    DELETE FROM partidos WHERE id = %s
-                    """, (id,))
-        conn.commit()
-        return jsonify({"message": "Partido eliminado exitosamente"}), 204 #No Content
+def eliminar_partido_endpoint(id):
+    try: 
+        logic.eliminar_partido(id)
+        return "", 204
 
-        #400
-        #404
-    except Exception as e:
+    except ValueError as ve:
+        mensaje = str(ve)
+        status_code = 404 if "No se encontró" in mensaje else 400
+        
         return jsonify({
-        "errors": [
-            {
+            "errors": [{
+                "code": "NOT_FOUND" if status_code == 404 else "BAD_REQUEST",
+                "message": mensaje,
+                "level": "error"
+            }]
+        }), status_code
+    
+    except Exception as e:
+        # Log para el desarrollador en la consola
+        print(f"Error inesperado: {e}") 
+        return jsonify({
+            "errors": [{
                 "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
-
+                "message": "Ocurrió un error interno al intentar eliminar",
+                "level": "error"
+            }]
+        }), 500
 # HECHO
 @partidos_bp.route("/<int:id>/resultado", methods=["PUT"])
 def actualizar_resultado_de_partido(id):
@@ -206,10 +204,7 @@ def actualizar_resultado_de_partido(id):
 
         new_resultado = logic.actualizar_resultado_de_partido(parametros)
 
-        return jsonify({
-            "message": "Resultado actualizado exitosamente",
-            "resultado": new_resultado
-        }), 200
+        return "", 204
 
     except ValueError as ve:
         mensaje = str(ve)
