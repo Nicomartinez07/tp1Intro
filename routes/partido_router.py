@@ -56,40 +56,7 @@ def obtener_partido_por_id(id):
 # Terminar de hacer
 @partidos_bp.route("/<int:id>", methods=["PUT"])
 def reemplazar_partido(id):
-    try:
-        datos = request.get_json()
-    
-        if not datos or 'equipo_local' not in datos or 'equipo_visitante' not in datos or 'fecha' not in datos or 'fase' not in datos:
-            return jsonify({'error': 'Los campos "equipo_local", "equipo_visitante", "fecha" y "fase" son obligatorios'}), 400 #Bad Request 
-
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    UPDATE partidos 
-                    SET equipo_local= %s, 
-                        equipo_visitante= %s, 
-                        fecha= %s, 
-                        fase= %s 
-                    WHERE id= %s """, (datos['equipo_local'], datos['equipo_visitante'], datos['fecha'], datos['fase'], id))
-
-        conn.commit()
-        return jsonify({"message": "Partido reemplazado exitosamente"}), 204 #No Content
-    except Exception as e:
-        return jsonify({
-        "errors": [
-            {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+    pass
 
 # SIN HACER
 @partidos_bp.route("/<int:id>", methods=["PATCH"])
@@ -98,84 +65,21 @@ def actualizar_partido(id):
 
 #Hecho
 @partidos_bp.route("/<int:id>", methods=["DELETE"])
-def eliminar_partido_endpoint(id):
-    try: 
-        logic.eliminar_partido(id)
-        return "", 204
+def eliminar_partido(id: int):
+    logic.eliminar_partido(id)
 
-    except ValueError as ve:
-        mensaje = str(ve)
+    return "", 204
 
-        if "No se encontró" in mensaje:
-            code = "NOT_FOUND"
-            status = 404
-            descripcion = f"No se encontro el partido con el ID {id}."
-        else:
-            code = "BAD_REQUEST"
-            status = 400
-            descripcion = "Los parámetros de la solicitud son inválidos."
 
-        return jsonify({
-            "errors": [{
-                "code": code,
-                "message": mensaje,
-                "description": descripcion,
-                "level": "error"
-            }]
-        }), status
-    
-    except Exception as e:
-        # Log para el desarrollador en la consola
-        print(f"Error inesperado: {e}") 
-        return jsonify({
-            "errors": [{
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno al intentar eliminar",
-                "level": "error"
-            }]
-        }), 500
     
 # HECHO
 @partidos_bp.route("/<int:id>/resultado", methods=["PUT"])
 def actualizar_resultado_de_partido(id):
-    try: 
-        parametros = request.get_json()
-        parametros["id"] = id
+    parametros = request.get_json()
 
-        logic.actualizar_resultado_de_partido(parametros)
+    logic.actualizar_resultado_de_partido(id, parametros)
 
-        return "", 204
-
-    except ValueError as ve:
-        mensaje = str(ve)
-
-        if "No se encontró" in mensaje:
-            code = "NOT_FOUND"
-            status = 404
-            descripcion = f"No se encontro el partido con el ID {id}."
-        else:
-            code = "BAD_REQUEST"
-            status = 400
-            descripcion = "Los parámetros de la solicitud son inválidos."
-
-        return jsonify({
-            "errors": [{
-                "code": code,
-                "message": mensaje,
-                "description": descripcion,
-                "level": "error"
-            }]
-        }), status
-    
-    except Exception as e:
-        return jsonify({
-            "errors": [{
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }]
-        }), 500
+    return "", 204
     
 # SIN HACER
 @partidos_bp.route("/<int:id>/prediccion}", methods=["POST"])

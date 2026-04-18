@@ -1,34 +1,7 @@
 import db
 
-def execute_query(query, params=None, select=True):
-    conn = None
-    cur = None
-    try:
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-
-        cur.execute(query, params)
-
-        if select: 
-            return cur.fetchall()
-        
-        conn.commit()
-        if query.strip().upper().startswith("INSERT"):
-            return cur.lastrowid
-        else:
-            return cur.rowcount
-    except Exception as e:
-        if conn: 
-            conn.rollback() # si hay un error en un post o put hay que revertir los cambios hecho a la DB para evitar datos corruptos 
-        raise e
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
-
-def obtener_partidos(equipo=None, fecha=None, fase=None):
-    query = "SELECT * FROM partidos WHERE 1=1" # el where 1=1 es necesario para poder unir el resto de condiciones en caso de necesario 
+def obtener_partidos(equipo=None, fecha=None, fase=None, limit=10, offset=0):
+    query = "FROM partidos WHERE 1=1" # el where 1=1 es necesario para poder unir el resto de condiciones en caso de necesario 
     params = []
 
     if equipo:
@@ -41,8 +14,12 @@ def obtener_partidos(equipo=None, fecha=None, fase=None):
         query += " AND fase = %s"
         params.append(fase)
 
-    partidos = execute_query(query, tuple(params))
-    return partidos
+    count_partidos = db.execute_query("SELECT COUNT(*) as total " + query, tuple(params), un_solo_valor=True) # cada GET necesita hacer un count de TODOS los elementos por fuera del 'limit' para el HATEOS 
+    total = count_partidos['total'] if count_partidos else 0
+
+    lista_partidos = db.execute_query("SELECT * " + query + " LIMIT %s OFFSET %s", tuple(params + [limit, offset]))
+    
+    return lista_partidos, total 
 
 def crear_partido(equipo_local, equipo_visitante, fecha, fase):
     query = """
@@ -51,11 +28,11 @@ def crear_partido(equipo_local, equipo_visitante, fecha, fase):
             """
     params = (equipo_local, equipo_visitante, fecha, fase)
 
-    new_id = execute_query(query, params, select=False)
+    new_id = db.execute_query(query, params, modifica_db=True)
 
     # buscamos el partido recien creado para pasarlo a la respuesta del endpoint 
     query = "SELECT * FROM partidos WHERE id = %s"
-    new_partido = execute_query(query, (new_id,), select=True)
+    new_partido = db.execute_query(query, (new_id,), un_solo_valor=True)
 
     return new_partido
 
@@ -73,36 +50,23 @@ def obtener_partido_por_id(id):
         LEFT JOIN resultados r ON p.id = r.partido_id 
         WHERE p.id = %s
     """ #left para traerme un partido sin resultado, porque sino no me traeria nada
-    resultado = execute_query(query, (id,), select=True)
-    return resultado[0] if resultado else None
+    resultado = db.execute_query(query, (id,), un_solo_valor=True)
+    return resultado
 
-def eliminar_partido(id):
+def eliminar_partido(id: int):
     query = "DELETE FROM partidos WHERE id = %s"
-    filas_afectadas = execute_query(query, (id,), select=False)
+    filas_afectadas = db.execute_query(query, (id,), modifica_db=True)
     return filas_afectadas > 0
 
-def actualizar_resultado_de_partido(id, goles_local, goles_visitante):
-
-    query = """
-        UPDATE resultados 
-        SET goles_local = %s, 
-            goles_visitante = %s 
-        WHERE partido_id = %s
+def actualizar_resultado_de_partido(id: int, goles_local: int, goles_visitante: int):
+    # la query intenta hacer un insert primero, si el ID ya existe (osea que ya tiene un resultado), hace un UPDATE 
+    query_upsert = """
+        INSERT INTO resultados (partido_id, goles_local, goles_visitante)
+        VALUES (%s, %s, %s)
+        ON DUPLICATE KEY UPDATE 
+            goles_local = VALUES(goles_local),
+            goles_visitante = VALUES(goles_visitante)
     """
-    params = (goles_local, goles_visitante, id)
+    db.execute_query(query_upsert, (id, goles_local, goles_visitante), modifica_db=True)
 
-    filas_afectadas = execute_query(query, params, select=False)
-    if filas_afectadas == 0:
-        query = """
-            INSERT INTO resultados (partido_id, goles_local, goles_visitante)
-            VALUES (%s, %s, %s)
-        """
-        execute_query(query, (id, goles_local, goles_visitante), select=False)
-    query = """
-        SELECT goles_local, goles_visitante 
-        FROM resultados 
-        WHERE partido_id = %s
-    """
-    new_resultado = execute_query(query, (id,), select=True)
-
-    return new_resultado
+    return 

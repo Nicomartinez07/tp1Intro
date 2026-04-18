@@ -4,7 +4,7 @@ from utils.error_handlers import NotFoundError, ValidationError
 
 global partido_params
 partido_params = ["equipo_local", "equipo_visitante", "fecha", "fase"]
-resultado_params = ["goles_local", "goles_visitante"]
+resultado_params = ["local", "visitante"]
 
 def __validar_fecha(fecha_str, incluye_hora=False):
     formato = '%Y-%m-%d %H:%M:%S' if incluye_hora else '%Y-%m-%d' # datetime or date dependiendo del la request 
@@ -39,45 +39,42 @@ def crear_partido(parametros):
     return new_partido  
 
 def obtener_partido_por_id(id):
-    row = db.obtener_partido_por_id(id)
+    partido = db.obtener_partido_por_id(id)
     
-    if not row:
+    if not partido:
         raise NotFoundError("No se encontró el partido")
     
     respuesta_estilizada = {
-        "id": row.get("id"),
-        "equipo_local": row.get("equipo_local"),
-        "equipo_visitante": row.get("equipo_visitante"),
-        "fecha": row.get("fecha").strftime("%Y-%m-%d") if row.get("fecha") else None,
-        "fase": row.get("fase"),
+        "id": partido.get("id"),
+        "equipo_local": partido.get("equipo_local"),
+        "equipo_visitante": partido.get("equipo_visitante"),
+        "fecha": partido.get("fecha").strftime("%Y-%m-%d") if partido.get("fecha") else None,
+        "fase": partido.get("fase"),
         "resultado": {
-            "local": row.get("goles_local"),
-            "visitante": row.get("goles_visitante")
+            "local": partido.get("goles_local"),
+            "visitante": partido.get("goles_visitante")
         }
     }
     return respuesta_estilizada
 
-def eliminar_partido(id):   
-    if not id:
-        raise ValidationError("El campo 'id' es requerido.")
-    
-    if not db.eliminar_partido(id):
+def eliminar_partido(id: int):   
+
+    if not db.eliminar_partido(id): # Devuelve false si no se elimino nada 
         raise NotFoundError("No se encontró el partido")
     
-    return True
+    return 
     
-def actualizar_resultado_de_partido(parametros):
+def actualizar_resultado_de_partido(id, parametros):
     for campo in resultado_params:
         if (campo not in parametros) or (parametros[campo] is None):
             raise ValidationError(f"El campo '{campo}' es requerido.")
         
-    id = parametros.get("id")
-    goles_local = parametros.get("goles_local")
-    goles_visitante = parametros.get("goles_visitante")
+    partido = db.obtener_partido_por_id(id)
+    if not partido:
+        raise NotFoundError("No se encontró el partido")
 
-    new_resultado = db.actualizar_resultado_de_partido(id, goles_local, goles_visitante)
+    goles_local = parametros.get("local")
+    goles_visitante = parametros.get("visitante")
 
-    if new_resultado is None:
-        raise NotFoundError("No se encontró el partido")  
-
-    return new_resultado
+    db.actualizar_resultado_de_partido(id, goles_local, goles_visitante)
+    return 
