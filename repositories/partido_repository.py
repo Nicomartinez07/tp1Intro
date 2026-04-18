@@ -85,3 +85,20 @@ def reemplazar_partido(id, equipo_local, equipo_visitante, fecha, fase):
     db.execute_query(query, params, modifica_db=True)
 
     return obtener_partido_por_id(id)
+
+def actualizar_partido_parcial(id: int, campos_a_actualizar: dict):
+    set_clauses = []
+    valores = []
+
+    for columna, valor in campos_a_actualizar.items():
+        set_clauses.append(f"{columna} = %s")
+        valores.append(valor)
+
+    set_query = ", ".join(set_clauses) # unir todas las declaraciones con comas para la query. ej: equipo_local = %s, fase = %s
+    
+    query = f"UPDATE partidos SET {set_query} WHERE id = %s"
+    valores.append(id)
+
+    db.execute_query(query, tuple(valores), modifica_db=True)
+
+    return obtener_partido_por_id(id)

@@ -58,6 +58,31 @@ def reemplazar_partido(id, parametros):
     
     return partido_actualizado
 
+def actualizar_partido(id, parametros):
+    if not parametros:
+        raise ValidationError("No se enviaron datos para actualizar.")
+
+    campos_a_actualizar = {}
+    for campo in partido_params:
+        value = parametros.get(campo)
+
+        if campo in parametros and value:
+            campos_a_actualizar[campo] = parametros[campo]
+
+    if not campos_a_actualizar:
+        raise ValidationError("No se enviaron campos válidos para actualizar.")
+
+    if "fecha" in campos_a_actualizar:
+        __validar_fecha(campos_a_actualizar["fecha"], True)
+
+    partido_existente = db.obtener_partido_por_id(id)
+    if not partido_existente:
+        raise NotFoundError(f"No se encontró el partido con ID {id} para actualizar.")
+
+    partido_actualizado = db.actualizar_partido_parcial(id, campos_a_actualizar)
+    
+    return partido_actualizado
+
 def obtener_partido_por_id(id):
     partido = db.obtener_partido_por_id(id)
     
