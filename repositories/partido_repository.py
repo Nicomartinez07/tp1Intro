@@ -70,3 +70,18 @@ def actualizar_resultado_de_partido(id: int, goles_local: int, goles_visitante: 
     db.execute_query(query_upsert, (id, goles_local, goles_visitante), modifica_db=True)
 
     return 
+
+def reemplazar_partido(id, equipo_local, equipo_visitante, fecha, fase):
+    query = """
+        UPDATE partidos 
+        SET equipo_local = %s, 
+            equipo_visitante = %s, 
+            fecha = %s, 
+            fase = %s
+        WHERE id = %s
+    """
+    params = (equipo_local, equipo_visitante, fecha, fase, id)
+    
+    db.execute_query(query, params, modifica_db=True)
+
+    return obtener_partido_por_id(id)

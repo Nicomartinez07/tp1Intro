@@ -56,7 +56,13 @@ def obtener_partido_por_id(id):
 # Terminar de hacer
 @partidos_bp.route("/<int:id>", methods=["PUT"])
 def reemplazar_partido(id):
-    pass
+    parametros = request.get_json()
+
+    partido_actualizado = logic.reemplazar_partido(id, parametros)
+
+    return jsonify({
+        "partido": partido_actualizado
+    }), 200
 
 # SIN HACER
 @partidos_bp.route("/<int:id>", methods=["PATCH"])

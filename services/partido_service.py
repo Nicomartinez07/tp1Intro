@@ -38,6 +38,26 @@ def crear_partido(parametros):
     new_partido = db.crear_partido(equipo_local, equipo_visitante, fecha, fase)
     return new_partido  
 
+def reemplazar_partido(id, parametros):
+    for campo in partido_params:
+        if (campo not in parametros) or (not parametros[campo]):
+            raise ValidationError(f"El campo '{campo}' es requerido.")
+
+    equipo_local = parametros["equipo_local"]
+    equipo_visitante = parametros["equipo_visitante"]
+    fecha = parametros["fecha"]
+    fase = parametros["fase"]
+
+    __validar_fecha(fecha, True)
+
+    partido_existente = db.obtener_partido_por_id(id)
+    if not partido_existente:
+        raise NotFoundError(f"No se encontró el partido con ID {id} para reemplazar.")
+
+    partido_actualizado = db.reemplazar_partido(id, equipo_local, equipo_visitante, fecha, fase)
+    
+    return partido_actualizado
+
 def obtener_partido_por_id(id):
     partido = db.obtener_partido_por_id(id)
     
