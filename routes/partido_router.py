@@ -10,129 +10,48 @@ partidos_bp = Blueprint("partidos", __name__, url_prefix="/partidos")
 
 @partidos_bp.route("/", methods=["GET"])
 def obtener_partidos():
-    try: 
-        equipo = request.args.get("equipo")
-        fecha = request.args.get("fecha")
-        fase = request.args.get("fase")
+    equipo = request.args.get("equipo")
+    fecha = request.args.get("fecha")
+    fase = request.args.get("fase")
+    limit = request.args.get('_limit', default=10, type=int)
+    offset = request.args.get('_offset', default=0, type=int)
 
-        limit = request.args.get('_limit', default=10, type=int)
-        offset = request.args.get('_offset', default=0, type=int)
+    partidos, total = logic.obtener_partidos(equipo, fecha, fase, limit, offset)
 
-        partidos, total = logic.obtener_partidos(equipo, fecha, fase, limit, offset)
+    if not partidos:
+        return jsonify({"message": "No se encontraron partidos con los criterios especificados."}), 204 # No Content
 
-        if not partidos:
-            return jsonify({"message": "No se encontraron partidos con los criterios especificados."}), 204 # No Content
-        
-        response = {
-            "partidos": partidos,
-            "total": total
-        }
-        
-        return jsonify(response), 200
+    response = {
+        "partidos": partidos,
+        "total": total
+    }
 
-    except ValueError as ve: # Errores en la validacion del service 
-        return jsonify({
-        "errors": [
-            {
-                "code": "BAD_REQUEST",
-                "message": str(ve),
-                "level": "error",
-            }
-        ]
-    }), 400
-
-    except Exception as e: # Errores internos 
-        return jsonify({
-        "errors": [
-            {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
+    return jsonify(response), 200
 
     
 @partidos_bp.route("/", methods=["POST"])
 def crear_partido():
-    try: 
-        parametros = request.get_json()
+    parametros = request.get_json()
 
-        new_partido = logic.crear_partido(parametros)
+    new_partido = logic.crear_partido(parametros)
 
-        return jsonify({"message": "Partido creado exitosamente", "partido": new_partido}), 201 #Created
+    return jsonify({"message": "Partido creado exitosamente", "partido": new_partido}), 201 #Created
 
-        #409
-    
-    except ValueError as ve:
-        return jsonify({
-        "errors": [
-            {
-                "code": "BAD_REQUEST",
-                "message": str(ve),
-                "level": "error",
-            }
-        ]
-    }), 400
-
-    except Exception as e:
-        return jsonify({
-        "errors": [
-            {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
+    #409
 
 
 # FALTA TERMINAR DE HACER 
 
 @partidos_bp.route("/<int:id>", methods=["GET"])
 def obtener_partido_por_id(id):
-    try: 
-        partido = logic.obtener_partido_por_id(id)
-        response = {
-            "partido": partido,
-        }
-        
-        return jsonify(response), 200
+    partido = logic.obtener_partido_por_id(id)
 
-    except ValueError as ve:
-        mensaje = str(ve)
-
-        if "No se encontró" in mensaje:
-            code = "NOT_FOUND"
-            status = 404
-            descripcion = f"No se encontro el partido con el ID {id}."
-        else:
-            code = "BAD_REQUEST"
-            status = 400
-            descripcion = "Los parámetros de la solicitud son inválidos."
-
-        return jsonify({
-            "errors": [{
-                "code": code,
-                "message": mensaje,
-                "description": descripcion,
-                "level": "error"
-            }]
-        }), status
+    response = {
+        "partido": partido,
+    }
     
-    except Exception as e: # Errores internos 
-        return jsonify({
-        "errors": [
-            {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
+    return jsonify(response), 200
+
 
 # Terminar de hacer
 @partidos_bp.route("/<int:id>", methods=["PUT"])
@@ -215,6 +134,7 @@ def eliminar_partido_endpoint(id):
                 "level": "error"
             }]
         }), 500
+    
 # HECHO
 @partidos_bp.route("/<int:id>/resultado", methods=["PUT"])
 def actualizar_resultado_de_partido(id):
