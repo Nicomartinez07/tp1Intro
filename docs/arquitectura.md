@@ -11,7 +11,7 @@ En el TP se pide la separacion de responsabilidades. **Cada capa hace una sola c
 * **Formato de respuesta:** Los routers reciben los 'datos crudos' y debe devolver diccionarios (ej. `["resultados": {...}]`) con su debido codigo HTTP
 
 ### Services (Lógica de la API)
-* **Qué hace:** Contiene toda la logica. Valida que los datos tengan sentido (ej. que fechas no sean imposibles, que el límite no sea negativo). Si algo está mal, levanta un error (ej. `raise ValueError`). Si todo está bien, pasa los datos a la siguiente capa, el `Repository`.
+* **Qué hace:** Contiene toda la logica. Valida que los datos tengan sentido (ej. que fechas no sean imposibles, que el límite no sea negativo). Si algo está mal, levanta un error (ej. `raise ValidationError o NotFoundError`). Si todo está bien, pasa los datos a la siguiente capa, el `Repository`.
 * **Reglas:**  **NO** sabe nada de HTTP (no usa `request`, ni `jsonify`, ni códigos de estado) y **NO** tiene SQL.
 
 ### Repositories (Capa de persistencia)
@@ -22,7 +22,7 @@ En el TP se pide la separacion de responsabilidades. **Cada capa hace una sola c
 
 ##  2. Paginación y HATEOAS 
 
-En app.py se implemento un middleware (`@app.after_request`) que agrega a las request validas, los links HATEOAS en solamente las request `GET`.
+En utils/middleware_hateoas.py se implemento un middleware (`@app.after_request`) que agrega a las request validas, los links HATEOAS en solamente las request `GET`.
 
 
 **¿Cómo funciona y como se activa para mi endpoint?** <br>
@@ -78,7 +78,17 @@ Utilizamos **MySQL** como motor de base de datos. Para vincular la API con tu se
 
 ---
 
-## 5. Buenas Practicas para Git 
+## 5. Manejo de Errores
+
+Todos los errores que pueden aparecer estan definidos en *utils/error_handlers.py*. Por eso no hace falta los try/except en los routers, ya que se manejan automaticamente. ej: `raise ValidationError("'X' campo esta mal")`<br> 
+Los errores que estan definidos son:
+* **ValidationError:** Devuelve status 400 (`BAD_REQUEST`)
+* **NotFoundError:** Devuelve status 404 (`NOT_FOUND`)
+* **Exception:** Devuelve status 500 (`INTERNAL_ERROR`). Este no hace falta hacer un raise, ya que cubre cualquier error posible 
+
+---
+
+## 6. Buenas Practicas para Git 
 
 Para poder entender el historial entre todos, podemos seguir estas recomendaciones:
 
@@ -103,7 +113,7 @@ Usemos prefijos para identificar que tipo de cambio se hizo. <br> El formato es:
 
 **Ejemplo:** `feat: agregar filtro por fase en el listado de partidos`
 
-## 6. Resumen
+## 7. Resumen
 
 Si tienes dudas sobre cómo implementar un nuevo **endpoint**, te recomendamos revisar los que ya estan terminados, revisados y siguen la arquitectura de capas y HATEOAS:
 

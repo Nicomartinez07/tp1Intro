@@ -1,14 +1,14 @@
 import mysql.connector
 import os
 
-global password
-password = "fiuba" # Asegurate que sea tu password de MySQL
+global PASSWORD
+PASSWORD = "fiuba" # Asegurate que sea tu password de MySQL
 
 def get_connection(database_name="prode_mundial_2026"):
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="password", # Asegurate que sea tu password de MySQL
+        password=PASSWORD,
         database=database_name
     )
 
@@ -17,7 +17,7 @@ def get_server_connection():
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="password"
+        password=PASSWORD
     )
 
 
@@ -65,7 +65,10 @@ def execute_query(query, params=None, modifica_db=False, un_solo_valor=False):
         
         # si la query es un insert o update hay que hacer commit() para que los cambios se guarden en la DB 
         conn.commit()
-        return cur.lastrowid
+        if query.strip().upper().startswith("INSERT"):
+            return cur.lastrowid
+        else:
+            return cur.rowcount
     except Exception as e:
         if conn: 
             conn.rollback() # si hay un error en un post o put hay que revertir los cambios hecho a la DB para evitar datos corruptos 
