@@ -13,11 +13,11 @@ usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
 def obtener_usuarios():
  try:
     nombre = request.args.get("nombre")
-    mail = request.args.get("mail")
+    email = request.args.get("email")
     limit = request.args.get('_limit', default=10, type=int)
     offset = request.args.get('_offset', default=0, type=int)
 
-    usuarios, total = logic.obtener_usuarios(nombre, mail, limit, offset)
+    usuarios, total = logic.obtener_usuarios(nombre, email, limit, offset)
   
 
     return jsonify(usuarios), 200
@@ -35,40 +35,11 @@ def obtener_usuarios():
 # terminar de hacer
 @usuarios_bp.route("/", methods=["POST"])
 def crear_usuario():
-    try:
-        datos = request.get_json()
-        if (not datos or 
-            'nombre' not in datos or 
-            'email' not in datos):
-            return jsonify({"error": "Datos incompletos"}), 400 #Bad Request, faltan datos necesarios para crear el partido
+    parametros = request.get_json()
 
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    INSERT INTO usuarios (nombre, email) 
-                    VALUES ('%s', '%s')
-                    """, (datos['nombre'], datos['email']))
+    new_usuario = logic.crear_usuario(parametros)
 
-        conn.commit()
-        return jsonify({"message": "Usuario creado exitosamente"}), 201 #Created
-        #400
-        #409
-    except Exception as e:
-        return jsonify({
-        "errors": [
-            {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+    return jsonify({"message": "Usuario creado exitosamente", "Usuario": new_usuario}), 201 #Created
 
 # terminar de hacer
 @usuarios_bp.route("/<int:id>", methods=["GET"])

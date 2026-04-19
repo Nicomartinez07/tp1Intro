@@ -1,6 +1,6 @@
 import db
 
-def obtener_usuarios(nombre=None, mail=None, limit=10, offset=0):
+def obtener_usuarios(nombre=None, email=None, limit=10, offset=0):
     
     query = "FROM usuarios WHERE 1=1" 
     params = []
@@ -12,9 +12,9 @@ def obtener_usuarios(nombre=None, mail=None, limit=10, offset=0):
         # Si buscan "ale", va a encontrar a "Alejandro" y "Valeria"
         params.append(f"%{nombre}%") 
         
-    if mail:
-        query += " AND mail LIKE %s"
-        params.append(f"%{mail}%")
+    if email:
+        query += " AND email LIKE %s"
+        params.append(f"%{email}%")
 
     count_usuarios = db.execute_query("SELECT COUNT(*) as total " + query, tuple(params), un_solo_valor=True)
     total = count_usuarios['total'] if count_usuarios else 0
@@ -22,3 +22,18 @@ def obtener_usuarios(nombre=None, mail=None, limit=10, offset=0):
     lista_usuarios = db.execute_query("SELECT * " + query + " LIMIT %s OFFSET %s", tuple(params + [limit, offset]))
     
     return lista_usuarios, total
+
+def crear_usuario(nombre, email):
+    query = """
+            INSERT INTO usuarios (nombre, email) 
+            VALUES (%s, %s)
+            """
+    params = (nombre, email)
+
+    new_id = db.execute_query(query, params, modifica_db=True)
+
+    # buscamos el usuario recien creado para pasarlo a la respuesta del endpoint 
+    query = "SELECT * FROM usuarios WHERE id = %s"
+    new_usuario = db.execute_query(query, (new_id,), un_solo_valor=True)
+
+    return new_usuario
