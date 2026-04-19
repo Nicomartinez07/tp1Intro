@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, Blueprint
-import db
+import services.usuario_service as logic
+
 
 app = Flask(__name__)
 usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
@@ -10,35 +11,27 @@ usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
 # terminar de hacer - agregar limit y offset como parametros de consulta y filtrar en base a eso
 @usuarios_bp.route("/", methods=["GET"])
 def obtener_usuarios():
-    try:
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    SELECT * FROM usuarios
-                    """)
-        
-        usuarios = cur.fetchall()
-        return jsonify(usuarios), 200
-        #200
-        #204
-        #400
-    except Exception as e:
+ try:
+    nombre = request.args.get("nombre")
+    mail = request.args.get("mail")
+    limit = request.args.get('_limit', default=10, type=int)
+    offset = request.args.get('_offset', default=0, type=int)
+
+    usuarios, total = logic.obtener_usuarios(nombre, mail, limit, offset)
+  
+
+    return jsonify(usuarios), 200
+
+ except Exception as e:
         return jsonify({
-        "errors": [
-            {
+            "errors": [{
                 "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
+                "message": "Ocurrió un error interno al obtener los usuarios",
                 "level": "error",
                 "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
-
+            }]
+        }), 500
+       
 # terminar de hacer
 @usuarios_bp.route("/", methods=["POST"])
 def crear_usuario():
