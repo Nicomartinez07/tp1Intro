@@ -37,3 +37,16 @@ def crear_usuario(nombre, email):
     new_usuario = db.execute_query(query, (new_id,), un_solo_valor=True)
 
     return new_usuario
+
+def obtener_usuario_por_id(id):
+    query = """
+        SELECT 
+        u.id, 
+        u.nombre, 
+        u.email
+    FROM usuarios u
+    WHERE u.id = %s
+    """
+    resultado = db.execute_query(query, (id,), un_solo_valor=True)
+    return resultado
+    

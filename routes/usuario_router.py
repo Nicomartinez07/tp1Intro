@@ -8,7 +8,7 @@ usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
 
 #Usuarios  --------------------------------------------------------------
 
-# terminar de hacer - agregar limit y offset como parametros de consulta y filtrar en base a eso
+# Hecho
 @usuarios_bp.route("/", methods=["GET"])
 def obtener_usuarios():
  try:
@@ -32,7 +32,7 @@ def obtener_usuarios():
             }]
         }), 500
        
-# terminar de hacer
+# Hecho
 @usuarios_bp.route("/", methods=["POST"])
 def crear_usuario():
     parametros = request.get_json()
@@ -44,33 +44,13 @@ def crear_usuario():
 # terminar de hacer
 @usuarios_bp.route("/<int:id>", methods=["GET"])
 def obtener_usuario_por_id(id):
-    try:
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    SELECT * FROM usuarios WHERE id = %s
-                    """, (id))
-        usuario = cur.fetchone()
-        if not usuario:
-            return jsonify({"error": "Usuario no encontrado"}), 404 #Not Found
-        return jsonify(usuario), 200 #OK
-        #400
-    except Exception as e:
-        return jsonify({
-        "errors": [
-            {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+   usuario = logic.obtener_usuario_por_id(id)
+
+   response = {
+       "usuario": usuario,
+    }
+   return jsonify(response), 200
+
 
 #terminar de hacer
 @usuarios_bp.route("/<int:id>", methods=["PUT"])

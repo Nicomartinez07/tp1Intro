@@ -21,3 +21,11 @@ def crear_usuario(parametros):
     new_usuario = db.crear_usuario(nombre, email)
     return new_usuario
 
+def obtener_usuario_por_id(id):
+    usuario = db.obtener_usuario_por_id(id)
+    
+    if not usuario:
+        raise NotFoundError("No se encontró el usuario")
+    
+    return usuario
+
