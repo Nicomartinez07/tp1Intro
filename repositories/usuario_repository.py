@@ -49,4 +49,9 @@ def obtener_usuario_por_id(id):
     """
     resultado = db.execute_query(query, (id,), un_solo_valor=True)
     return resultado
-    
+
+
+def eliminar_usuario(id: int):
+    query = "DELETE FROM usuarios WHERE id = %s"
+    filas_afectadas = db.execute_query(query, (id,), modifica_db=True)
+    return filas_afectadas > 0

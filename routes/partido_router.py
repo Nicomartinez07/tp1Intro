@@ -40,8 +40,6 @@ def crear_partido():
     #409
 
 
-# FALTA TERMINAR DE HACER 
-
 @partidos_bp.route("/<int:id>", methods=["GET"])
 def obtener_partido_por_id(id):
     partido = logic.obtener_partido_por_id(id)
@@ -53,7 +51,6 @@ def obtener_partido_por_id(id):
     return jsonify(response), 200
 
 
-# Terminar de hacer
 @partidos_bp.route("/<int:id>", methods=["PUT"])
 def reemplazar_partido(id):
     parametros = request.get_json()
@@ -75,7 +72,6 @@ def actualizar_partido(id):
         "partido": partido_actualizado
     }), 200
 
-#Hecho
 @partidos_bp.route("/<int:id>", methods=["DELETE"])
 def eliminar_partido(id: int):
     logic.eliminar_partido(id)
@@ -83,8 +79,6 @@ def eliminar_partido(id: int):
     return "", 204
 
 
-    
-# HECHO
 @partidos_bp.route("/<int:id>/resultado", methods=["PUT"])
 def actualizar_resultado_de_partido(id):
     parametros = request.get_json()

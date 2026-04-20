@@ -29,3 +29,9 @@ def obtener_usuario_por_id(id):
     
     return usuario
 
+def eliminar_usuario(id: int):   
+
+    if not db.eliminar_usuario(id): # Devuelve false si no se elimino nada 
+        raise NotFoundError("No se encontró el usuario")
+        
+    return 

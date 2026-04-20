@@ -8,7 +8,6 @@ usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
 
 #Usuarios  --------------------------------------------------------------
 
-# Hecho
 @usuarios_bp.route("/", methods=["GET"])
 def obtener_usuarios():
  try:
@@ -32,7 +31,6 @@ def obtener_usuarios():
             }]
         }), 500
        
-# Hecho
 @usuarios_bp.route("/", methods=["POST"])
 def crear_usuario():
     parametros = request.get_json()
@@ -41,7 +39,6 @@ def crear_usuario():
 
     return jsonify({"message": "Usuario creado exitosamente", "Usuario": new_usuario}), 201 #Created
 
-# terminar de hacer
 @usuarios_bp.route("/<int:id>", methods=["GET"])
 def obtener_usuario_por_id(id):
    usuario = logic.obtener_usuario_por_id(id)
@@ -52,7 +49,6 @@ def obtener_usuario_por_id(id):
    return jsonify(response), 200
 
 
-#terminar de hacer
 @usuarios_bp.route("/<int:id>", methods=["PUT"])
 def reemplazar_usuario(id):
     try:
@@ -87,32 +83,10 @@ def reemplazar_usuario(id):
         if conn:
             conn.close()
 
-# terminar de hacer
 @usuarios_bp.route("/<int:id>", methods=["DELETE"])
-def eliminar_usuario(id):
-    try:
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    DELETE FROM usuarios WHERE id = %s
-                    """, (id,))
-        conn.commit()
-        return jsonify({"message": "Usuario eliminado exitosamente"}), 204 #No Content
-        #400
-        #404
-    except Exception as e:
-        return jsonify({
-        "errors": [
-            {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+def eliminar_usuario(id: int):
+    logic.eliminar_usuario(id)
+
+    return "", 204
+
+
