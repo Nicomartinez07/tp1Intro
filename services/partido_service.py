@@ -125,8 +125,6 @@ def actualizar_resultado_de_partido(id, parametros):
     db.actualizar_resultado_de_partido(id, goles_local, goles_visitante)
     return 
 
-
-
 def realizar_prediccion(id, datos):
     # 1. Validaciones
     

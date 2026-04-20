@@ -51,37 +51,13 @@ def obtener_usuario_por_id(id):
 
 @usuarios_bp.route("/<int:id>", methods=["PUT"])
 def reemplazar_usuario(id):
-    try:
-        datos = request.get_json()
-        if not datos or 'nombre' not in datos or 'email' not in datos:
-            return jsonify({'error': 'Los campos "nombre" y "email" son obligatorios'}), 400 #Bad Request 
+    parametros = request.get_json()
 
-        conn = db.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("""
-                    UPDATE usuarios 
-                    SET nombre= %s, 
-                        email= %s 
-                    WHERE id= %s """, (datos['nombre'], datos['email'], id))
+    usuario_actualizado = logic.reemplazar_usuario(id, parametros)
 
-        conn.commit()
-        return jsonify({"message": "Usuario reemplazado exitosamente"}), 204 #No Content
-    except Exception as e:
-        return jsonify({
-        "errors": [
-            {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+    return jsonify({
+        "usuario": usuario_actualizado
+    }), 200
 
 @usuarios_bp.route("/<int:id>", methods=["DELETE"])
 def eliminar_usuario(id: int):

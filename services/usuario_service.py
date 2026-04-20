@@ -35,3 +35,19 @@ def eliminar_usuario(id: int):
         raise NotFoundError("No se encontró el usuario")
         
     return 
+
+def reemplazar_usuario(id, parametros):
+    for campo in usuario_params:
+        if (campo not in parametros) or (not parametros[campo]):
+            raise ValidationError(f"El campo '{campo}' es requerido.")
+
+    nombre = parametros["nombre"]
+    email = parametros["email"]
+
+    usuario_existente = db.obtener_usuario_por_id(id)
+    if not usuario_existente:
+        raise NotFoundError(f"No se encontró el usuario con ID {id} para reemplazar.")
+
+    usuario_actualizado = db.reemplazar_usuario(id, nombre, email)
+
+    return usuario_actualizado
