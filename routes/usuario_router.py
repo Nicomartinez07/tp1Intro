@@ -1,64 +1,54 @@
 from flask import Flask, request, jsonify, Blueprint
 import services.usuario_service as logic
-
+from utils.error_handlers import created_response, ValidationError
 
 app = Flask(__name__)
 usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
 
 
-#Usuarios  --------------------------------------------------------------
+# ─── GET /usuarios ────────────────────────────────────────────────────────────
 
 @usuarios_bp.route("/", methods=["GET"])
 def obtener_usuarios():
- try:
     nombre = request.args.get("nombre")
     email = request.args.get("email")
     limit = request.args.get('_limit', default=10, type=int)
     offset = request.args.get('_offset', default=0, type=int)
 
     usuarios, total = logic.obtener_usuarios(nombre, email, limit, offset)
-  
 
-    return jsonify(usuarios), 200
+    if not usuarios:
+        return "", 204
 
- except Exception as e:
-        return jsonify({
-            "errors": [{
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno al obtener los usuarios",
-                "level": "error",
-                "description": str(e)
-            }]
-        }), 500
-       
+    return jsonify({"usuarios": usuarios, "total": total}), 200
+
+
+# ─── POST /usuarios ───────────────────────────────────────────────────────────
+
 @usuarios_bp.route("/", methods=["POST"])
 def crear_usuario():
     parametros = request.get_json()
-
     new_usuario = logic.crear_usuario(parametros)
+    return created_response({"message": "Usuario creado exitosamente", "usuario": new_usuario}, f"/usuarios/{new_usuario['id']}")
 
-    return jsonify({"message": "Usuario creado exitosamente", "Usuario": new_usuario}), 201 #Created
+
+# ─── GET /usuarios/{id} ───────────────────────────────────────────────────────
 
 @usuarios_bp.route("/<int:id>", methods=["GET"])
 def obtener_usuario_por_id(id):
-   usuario = logic.obtener_usuario_por_id(id)
+    usuario = logic.obtener_usuario_por_id(id)
+    return jsonify(usuario), 200
 
-   response = {
-       "usuario": usuario,
-    }
-   return jsonify(response), 200
 
+# ─── PUT /usuarios/{id} ───────────────────────────────────────────────────────
 
 @usuarios_bp.route("/<int:id>", methods=["PUT"])
 def reemplazar_usuario(id):
     parametros = request.get_json()
+    logic.reemplazar_usuario(id, parametros)
+    return "", 204
 
-    usuario_actualizado = logic.reemplazar_usuario(id, parametros)
-
-    return jsonify({
-        "usuario": usuario_actualizado
-    }), 200
-
+# ─── DELETE /usuarios/{id} ────────────────────────────────────────────────────
 @usuarios_bp.route("/<int:id>", methods=["DELETE"])
 def eliminar_usuario(id: int):
     logic.eliminar_usuario(id)
@@ -66,3 +56,8 @@ def eliminar_usuario(id: int):
     return "", 204
 
 
+# ─── Catch-all para IDs no numéricos ─────────────────────────────────────────
+
+@usuarios_bp.route("/<id>", methods=["GET", "PUT", "PATCH", "DELETE"])
+def usuario_id_invalido(id):
+    raise ValidationError("El ID debe ser un número entero positivo.")

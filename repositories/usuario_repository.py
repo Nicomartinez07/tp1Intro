@@ -55,15 +55,22 @@ def eliminar_usuario(id: int):
     filas_afectadas = db.execute_query(query, (id,), modifica_db=True)
     return filas_afectadas > 0
 
+def existe_email(email, excluir_id=None):
+    if excluir_id is not None:
+        query = "SELECT COUNT(*) as total FROM usuarios WHERE email = %s AND id != %s"
+        result = db.execute_query(query, (email, excluir_id), un_solo_valor=True)
+    else:
+        query = "SELECT COUNT(*) as total FROM usuarios WHERE email = %s"
+        result = db.execute_query(query, (email,), un_solo_valor=True)
+    return result['total'] > 0 if result else False
+
 def reemplazar_usuario(id, nombre, email):
-    query = """
-        UPDATE usuarios 
-        SET nombre = %s, 
-            email = %s
-        WHERE id = %s
-    """
-    params = (nombre, email, id)
-
-    db.execute_query(query, params, modifica_db=True)
-
-    return obtener_usuario_por_id(id)
+    filas = db.execute_query(
+        "UPDATE usuarios SET nombre = %s, email = %s WHERE id = %s",
+        (nombre, email, id), modifica_db=True
+    )
+    if filas == 0:
+        db.execute_query(
+            "INSERT INTO usuarios (nombre, email) VALUES (%s, %s)",
+            (nombre, email), modifica_db=True
+        )
