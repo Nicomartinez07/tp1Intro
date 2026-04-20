@@ -50,6 +50,8 @@ pip install -r requirements.txt
 
 ### 2. Base de Datos
 
+En `db.py` cambien la constante **PASSWORD** con la contraseña de su base de datos, luego:
+
 ```bash
 # Crear la estructura de tablas (Database & Tables)
 python init_db.py
