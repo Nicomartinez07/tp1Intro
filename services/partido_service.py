@@ -1,6 +1,7 @@
 from datetime import datetime
 import repositories.partido_repository as db
 from utils.error_handlers import NotFoundError, ValidationError
+from services.usuario_service import obtener_usuario_por_id
 
 global partido_params
 partido_params = ["equipo_local", "equipo_visitante", "fecha", "fase"]
@@ -116,10 +117,37 @@ def actualizar_resultado_de_partido(id, parametros):
         
     partido = db.obtener_partido_por_id(id)
     if not partido:
-        raise NotFoundError("No se encontró el partido")
+        raise NotFoundError("No se encontró el partido")    
 
     goles_local = parametros.get("local")
     goles_visitante = parametros.get("visitante")
 
     db.actualizar_resultado_de_partido(id, goles_local, goles_visitante)
     return 
+
+
+
+def realizar_prediccion(id, datos):
+    # 1. Validaciones
+    
+    campos_requeridos = ["id_usuario", "local", "visitante"]
+    for campo in campos_requeridos:
+        if campo not in datos:
+            raise ValidationError(f"El campo '{campo}' es obligatorio.")
+
+    # 2. Validar que el usuario exista
+    usuario = obtener_usuario_por_id(datos["id_usuario"])
+    if not usuario:
+        raise NotFoundError(f"El usuario con ID {datos['id_usuario']} no existe.")
+
+    # 3. Validar que el partido exista
+    partido = obtener_partido_por_id(id)
+    if not partido:
+        raise NotFoundError(f"El partido con ID {id} no existe.")
+    # Mapeo 
+    return db.realizar_prediccion(
+        usuario_id = datos["id_usuario"],
+        partido_id = id,
+        prediccion_local = datos["local"],
+        prediccion_visitante = datos["visitante"]
+    )

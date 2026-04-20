@@ -93,24 +93,11 @@ def actualizar_resultado_de_partido(id):
 
     return "", 204
     
-# SIN HACER
-@partidos_bp.route("/<int:id>/prediccion}", methods=["POST"])
-def realizar_prediccion(id):
-    try:
-        #201
-        #400
-        #404
-        #409
+# Hecho
 
-        pass
-    except Exception as e:
-        return jsonify({
-        "errors": [
-            {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Ocurrió un error interno",
-                "level": "error",
-                "description": str(e)
-            }
-        ]
-    }), 500 #Internal Server Error
+@partidos_bp.route("/<int:id>/prediccion", methods=["POST"])
+def realizar_prediccion(id):
+    datos = request.get_json()
+    
+    resultado = logic.realizar_prediccion(id, datos)
+    return jsonify(resultado), 201

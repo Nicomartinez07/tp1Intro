@@ -102,3 +102,20 @@ def actualizar_partido_parcial(id: int, campos_a_actualizar: dict):
     db.execute_query(query, tuple(valores), modifica_db=True)
 
     return obtener_partido_por_id(id)
+
+
+
+def realizar_prediccion(usuario_id, partido_id, prediccion_local, prediccion_visitante):
+    query = """
+        INSERT INTO predicciones (usuario_id, partido_id, prediccion_local, prediccion_visitante)
+        VALUES (%s, %s, %s, %s)
+    """
+    params = (usuario_id, partido_id, prediccion_local, prediccion_visitante)
+    db.execute_query(query, params, modifica_db=True)
+    
+    # vuelvo a la variable que se pide
+    return {
+        "id_usuario": usuario_id,
+        "local": prediccion_local,
+        "visitante": prediccion_visitante
+    }
