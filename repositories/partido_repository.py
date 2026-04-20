@@ -21,6 +21,14 @@ def obtener_partidos(equipo=None, fecha=None, fase=None, limit=10, offset=0):
     
     return lista_partidos, total 
 
+def existe_partido(equipo_local, equipo_visitante, fecha, fase):
+    query = """
+        SELECT COUNT(*) as total FROM partidos
+        WHERE equipo_local = %s AND equipo_visitante = %s AND fecha = %s AND fase = %s
+    """
+    result = db.execute_query(query, (equipo_local, equipo_visitante, fecha, fase), un_solo_valor=True)
+    return result['total'] > 0 if result else False
+
 def crear_partido(equipo_local, equipo_visitante, fecha, fase):
     query = """
             INSERT INTO partidos (equipo_local, equipo_visitante, fecha, fase) 

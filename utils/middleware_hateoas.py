@@ -5,18 +5,16 @@ from multidict import MultiDict
 def build_HATEOAS_links(api_url, request_args, limit, offset, total):
     # Estos son los links que SIEMPRE van a estar
     base_links = {
-        "self": {"href": f"{api_url}?{request_args}&_limit={limit}&_offset={offset}"},
-        "first": {"href": f"{api_url}?{request_args}&_limit={limit}&_offset={0}"}, 
-        "last":  {"href": f"{api_url}?{request_args}&_limit={limit}&_offset={max(((total - 1) // limit) * limit, 0)}"}
+        "_self": {"href": f"{api_url}?{request_args}&_limit={limit}&_offset={offset}"},
+        "_first": {"href": f"{api_url}?{request_args}&_limit={limit}&_offset={0}"},
+        "_last":  {"href": f"{api_url}?{request_args}&_limit={limit}&_offset={max(((total - 1) // limit) * limit, 0)}"}
     }
 
-    # si estamos en la primera pagina no existe un pagina anterior 
     if offset > 0:
-        base_links["prev"] = {"href": f"{api_url}?{request_args}&_limit={limit}&_offset={max(offset-limit, 0)}"}
+        base_links["_prev"] = {"href": f"{api_url}?{request_args}&_limit={limit}&_offset={max(offset-limit, 0)}"}
 
-    # si estamos en la ultima pagina no existe una pagina siguiente
-    if offset + limit < total: 
-        base_links["next"] = {"href": f"{api_url}?{request_args}&_limit={limit}&_offset={min(offset+limit, total)}"}
+    if offset + limit < total:
+        base_links["_next"] = {"href": f"{api_url}?{request_args}&_limit={limit}&_offset={min(offset+limit, total)}"}
 
     return base_links
 

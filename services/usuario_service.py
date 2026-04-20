@@ -1,13 +1,15 @@
 import repositories.usuario_repository as db
-from utils.error_handlers import NotFoundError, ValidationError
+from utils.error_handlers import NotFoundError, ValidationError, DuplicateError
+import mysql.connector
 
 global usuario_params
-usuario_params = ["nombre", "email"] 
+usuario_params = ["nombre", "email"]
 
 def obtener_usuarios(nombre=None, email=None, limit=10, offset=0):
-    if limit < 0 or offset < 0:
-        raise ValidationError("Los parametros '_limit' y '_offset' deben ser enteros no negativos.")
-    
+    if limit < 1:
+        raise ValidationError("El parámetro '_limit' debe ser mayor a 0.")
+    if offset < 0:
+        raise ValidationError("El parámetro '_offset' no puede ser negativo.")
     return db.obtener_usuarios(nombre, email, limit, offset)
 
 def crear_usuario(parametros):
@@ -17,9 +19,14 @@ def crear_usuario(parametros):
 
     nombre = parametros["nombre"]
     email = parametros["email"]
-    
-    new_usuario = db.crear_usuario(nombre, email)
-    return new_usuario
+
+    if db.existe_email(email):
+        raise DuplicateError("Ya existe un usuario con ese email.")
+
+    try:
+        return db.crear_usuario(nombre, email)
+    except mysql.connector.errors.IntegrityError:
+        raise DuplicateError("Ya existe un usuario con ese email.")
 
 def obtener_usuario_por_id(id):
     usuario = db.obtener_usuario_por_id(id)
@@ -44,10 +51,11 @@ def reemplazar_usuario(id, parametros):
     nombre = parametros["nombre"]
     email = parametros["email"]
 
-    usuario_existente = db.obtener_usuario_por_id(id)
-    if not usuario_existente:
-        raise NotFoundError(f"No se encontró el usuario con ID {id} para reemplazar.")
+    if db.existe_email(email, excluir_id=id):
+        raise DuplicateError("Ya existe otro usuario con ese email.")
 
-    usuario_actualizado = db.reemplazar_usuario(id, nombre, email)
+    try:
+        db.reemplazar_usuario(id, nombre, email)
+    except mysql.connector.errors.IntegrityError:
+        raise DuplicateError("Ya existe otro usuario con ese email.")
 
-    return usuario_actualizado

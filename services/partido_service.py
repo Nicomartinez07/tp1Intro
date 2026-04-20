@@ -1,26 +1,47 @@
 from datetime import datetime
 import repositories.partido_repository as db
-from utils.error_handlers import NotFoundError, ValidationError
+from utils.error_handlers import NotFoundError, ValidationError, DuplicateError
 from services.usuario_service import obtener_usuario_por_id
+import mysql.connector
 
 global partido_params
 partido_params = ["equipo_local", "equipo_visitante", "fecha", "fase"]
 resultado_params = ["local", "visitante"]
 
+FASES_VALIDAS = {"grupos", "dieciseisavos", "octavos", "cuartos", "semis", "final"}
+
 def __validar_fecha(fecha_str, incluye_hora=False):
-    formato = '%Y-%m-%d %H:%M:%S' if incluye_hora else '%Y-%m-%d' # datetime or date dependiendo del la request 
-    try:
-        return datetime.strptime(fecha_str, formato)
-    except (ValueError, TypeError):
-        raise ValidationError(f"Fecha invalida")
+    if not isinstance(fecha_str, str):
+        raise ValidationError("Fecha invalida")
+    # Normalizar: quitar Z final y truncar milisegundos
+    normalizada = fecha_str.rstrip('Z')
+    if '.' in normalizada:
+        normalizada = normalizada[:normalizada.index('.')]
+    if incluye_hora:
+        formatos = ['%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M', '%Y-%m-%d']
+    else:
+        formatos = ['%Y-%m-%d']
+    for fmt in formatos:
+        try:
+            return datetime.strptime(normalizada, fmt)
+        except ValueError:
+            pass
+    raise ValidationError("Fecha invalida")
+
+def __validar_fase(fase):
+    if fase not in FASES_VALIDAS:
+        raise ValidationError(f"Fase invalida. Las fases válidas son: {', '.join(sorted(FASES_VALIDAS))}")
 
 def obtener_partidos(equipo=None, fecha=None, fase=None, limit=10, offset=0):
+    if limit < 1:
+        raise ValidationError("El parámetro '_limit' debe ser mayor a 0.")
+    if offset < 0:
+        raise ValidationError("El parámetro '_offset' no puede ser negativo.")
     if fecha:
         __validar_fecha(fecha)
+    if fase:
+        __validar_fase(fase)
 
-    if limit < 0 or offset < 0:
-        raise ValidationError("Los parametros '_limit' y '_offset' deben ser enteros no negativos.")
-    
     return db.obtener_partidos(equipo, fecha, fase, limit, offset)
 
 
@@ -35,9 +56,13 @@ def crear_partido(parametros):
     fase = parametros["fase"]
 
     __validar_fecha(fecha, True)
+    __validar_fase(fase)
+
+    if db.existe_partido(equipo_local, equipo_visitante, fecha, fase):
+        raise DuplicateError("Ya existe un partido con los mismos datos.")
 
     new_partido = db.crear_partido(equipo_local, equipo_visitante, fecha, fase)
-    return new_partido  
+    return new_partido
 
 def reemplazar_partido(id, parametros):
     for campo in partido_params:
@@ -50,14 +75,9 @@ def reemplazar_partido(id, parametros):
     fase = parametros["fase"]
 
     __validar_fecha(fecha, True)
+    __validar_fase(fase)
 
-    partido_existente = db.obtener_partido_por_id(id)
-    if not partido_existente:
-        raise NotFoundError(f"No se encontró el partido con ID {id} para reemplazar.")
-
-    partido_actualizado = db.reemplazar_partido(id, equipo_local, equipo_visitante, fecha, fase)
-    
-    return partido_actualizado
+    db.reemplazar_partido(id, equipo_local, equipo_visitante, fecha, fase)
 
 def actualizar_partido(id, parametros):
     if not parametros:
@@ -66,7 +86,6 @@ def actualizar_partido(id, parametros):
     campos_a_actualizar = {}
     for campo in partido_params:
         value = parametros.get(campo)
-
         if campo in parametros and value:
             campos_a_actualizar[campo] = parametros[campo]
 
@@ -75,6 +94,8 @@ def actualizar_partido(id, parametros):
 
     if "fecha" in campos_a_actualizar:
         __validar_fecha(campos_a_actualizar["fecha"], True)
+    if "fase" in campos_a_actualizar:
+        __validar_fase(campos_a_actualizar["fase"])
 
     partido_existente = db.obtener_partido_por_id(id)
     if not partido_existente:
@@ -94,7 +115,7 @@ def obtener_partido_por_id(id):
         "id": partido.get("id"),
         "equipo_local": partido.get("equipo_local"),
         "equipo_visitante": partido.get("equipo_visitante"),
-        "fecha": partido.get("fecha").strftime("%Y-%m-%d") if partido.get("fecha") else None,
+        "fecha": partido.get("fecha").strftime("%Y-%m-%dT%H:%M:%S") if partido.get("fecha") else None,
         "fase": partido.get("fase"),
         "resultado": {
             "local": partido.get("goles_local"),
@@ -142,10 +163,13 @@ def realizar_prediccion(id, datos):
     partido = obtener_partido_por_id(id)
     if not partido:
         raise NotFoundError(f"El partido con ID {id} no existe.")
-    # Mapeo 
-    return db.realizar_prediccion(
-        usuario_id = datos["id_usuario"],
-        partido_id = id,
-        prediccion_local = datos["local"],
-        prediccion_visitante = datos["visitante"]
-    )
+
+    try:
+        return db.realizar_prediccion(
+            usuario_id=datos["id_usuario"],
+            partido_id=id,
+            prediccion_local=datos["local"],
+            prediccion_visitante=datos["visitante"]
+        )
+    except mysql.connector.errors.IntegrityError:
+        raise DuplicateError("El usuario ya tiene una predicción para este partido.")
